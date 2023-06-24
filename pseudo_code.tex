@@ -1,0 +1,59 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{algpseudocode}
+\usepackage[ruled, lined, longend, linesnumbered]{algorithm2e}
+\algnewcommand{\LeftComment}[1]{\Statex \(\triangleright\) #1}
+
+\begin{document}
+\begin{algorithm}
+    \caption{RadarPointNet}
+    input: point set $P^{0}$, parameter $N_{sampling}, N_{grouping}$
+    
+    $xyz^{0}=\left\{P^{0}(X),P^{0}(Y),P^{0}(Z)\right\}$ \Comment{xyz locations}    
+    
+    \For {i=1:3} {% 
+    \For {j=1:$N^{(i)}_{sampling}$} {%
+    find the farthest point $p_{j}$ to other points in $P^{i-1}$;
+    }
+    remove points other than $\left\{p_{1},...,P_{n_{sampling}}\right\}$ from $P^{(i-1)}$
+    
+    init point feature $F^{(i)}=\left\{\right\}$
+    
+    \For {each $p_{j}\in P^{(i-1)} $} {%
+    query $n^{(i)}_{grouping}$ points $\left\{p_{(j,1),...,p_{(j,N^{(i)}_{grouping})}}\right\}$ within radius $r^{(i)}$;
+    
+    calculate group centroid: $(x_{i},y_{i},z_{i})=\frac{p_{j}+\sum_{k=1}^{n}p_{k}}{n+1}$
+    
+    update $xyz^{(i-1}$ with $xyz^{(i)}[j]=(x_{j},y_{j},z_{j})$
+    
+    append the group point feature to $F^{(i)}=\left\{F^{(i)},\left\{p_{(j,1),...,p_{(j,n^{(i)}_{grouping})}}\right\}\right\}$
+    }
+    
+    concatenate $F^{(i)}=\left\{F^{(i)},xyz^{(i)}\right\}$
+    
+    \For{j=1:3} {%
+    $F^{(i)}=F^{(i)}=F^{(i)}\ast W^{(i,j))}$ \Comment{Conv}
+    
+    $F^{(i)}=\gamma^{(i,j)}\odot\left ( \frac{F^{(i)}-\mu^{(i,j)} }{\sigma^{(i,j)} } \right ) +\beta^{(i,j)} $ \Comment{norm}
+    
+    $F^{(i)}=max(0, F^{(i)})$ \Comment{ReLU}
+    }
+    
+    $P^{(i)}=max(F^{(3)}, axis=1)$ \Comment{MaxPooling}
+    }
+    
+    $F^{(0)}=P^{(3)}$
+    
+    \For {i=1:2} {% 
+    $F^{(fc1)}=\left ( F^{(i-1)}W^{(i)}+b^{(i)} \right )$ \Comment{FC}
+
+    $F^{(i)}=\gamma^{(i)}\odot\left ( \frac{F^{(i)}-\mu^{(i)} }{\sigma^{(i)} } \right ) +\beta^{(i)} $ \Comment{norm}
+
+    $F^{(i)}=max(0, F^{(i)})$ \Comment{ReLU}
+    }
+
+    $label=argmax\left ( F^{(2)}W^{(2)} \right )$
+
+    return: $label$ 
+\end{algorithm}
+\end{document}
