@@ -1,2 +1,7 @@
 __pycache__/*
 data/*
+tb_logs/*
+dataset/*
+MNIST/*
+lightning_logs/*
+*.pyc
